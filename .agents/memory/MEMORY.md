@@ -1,0 +1,1 @@
+- [Clerk browser auth](clerk-browser-auth.md) — web API auth is cookie-based; protect admin routes with Clerk middleware and an explicit production admin identity.
