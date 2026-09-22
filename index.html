@@ -1,1030 +1,884 @@
 <!DOCTYPE html>
 <html lang="ca">
-
 <head>
-
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rotaract Attendance</title>
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>
-    Rotaract · Check-in
-  </title>
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-
-    :root {
-      --green: #0B4D3E;
-      --green-light: #16846A;
-      --bg: #F6F8F7;
-      --white: #FFFFFF;
-      --text: #17211D;
-      --muted: #718078;
-      --border: #E1E8E4;
-      --red: #B42318;
-    }
-
     * {
       box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family:
-        Inter,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
+      font-family: Arial, sans-serif;
+      background: #f5f7f6;
+      color: #123;
     }
 
-    button,
-    input {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: auto;
-      padding: 25px 16px 50px;
-    }
-
-    .top {
+    header {
+      background: #0b4d3e;
+      color: white;
+      padding: 18px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 25px;
     }
 
-    .logo {
-      color: var(--green);
-      font-weight: 900;
-      letter-spacing: 2px;
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header a {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    main {
+      max-width: 850px;
+      margin: auto;
+      padding: 25px 18px 50px;
     }
 
     .card {
       background: white;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 18px;
-      margin: 12px 0;
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+    .hero {
+      text-align: center;
+    }
+
+    .hero h2 {
+      margin: 5px 0 8px;
+      font-size: 28px;
+    }
+
+    .meeting-date {
+      color: #666;
+      margin-bottom: 18px;
+    }
+
+    .attendance-big {
+      font-size: 42px;
+      font-weight: bold;
+      color: #0b4d3e;
+    }
+
+    .progress {
+      height: 10px;
+      background: #e6e9e7;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: #16846a;
+      width: 0%;
+      transition: width 0.4s;
     }
 
     input {
       width: 100%;
-      padding: 13px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
       outline: none;
     }
 
     input:focus {
-      border-color: var(--green-light);
+      border-color: #16846a;
     }
 
-    button {
-      padding: 11px 14px;
-      border: 0;
-      border-radius: 10px;
-      background: var(--green);
-      color: white;
-      font-weight: 800;
+    .member-list {
+      margin-top: 12px;
     }
 
-    .secondary {
-      background: white;
-      color: var(--green);
-      border: 1px solid var(--border);
-    }
-
-    .danger {
-      background: var(--red);
-    }
-
-    .row {
+    .member {
+      padding: 15px;
+      border-radius: 12px;
+      background: #f7f9f8;
+      margin-bottom: 8px;
+      cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      padding: 11px 0;
-      border-bottom: 1px solid var(--border);
+      transition: 0.15s;
     }
 
-    .row:last-child {
-      border-bottom: 0;
+    .member:hover {
+      background: #eaf3ef;
     }
 
-    .error {
-      background: #FEF3F2;
-      color: var(--red);
-      padding: 12px;
-      border-radius: 10px;
-      margin-top: 12px;
+    .member-name {
+      font-weight: bold;
     }
 
-    .success {
-      background: #E8F7EF;
-      color: #067647;
-      padding: 12px;
-      border-radius: 10px;
-      margin-top: 12px;
+    .checked {
+      color: #16846a;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 13px 18px;
+      background: #0b4d3e;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .secondary-button {
+      background: #e9efec;
+      color: #0b4d3e;
     }
 
     .hidden {
-      display: none;
+      display: none !important;
     }
 
-    @media(max-width:650px) {
-
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .top {
-        align-items: flex-start;
-        gap: 15px;
-      }
-
+    .profile {
+      text-align: center;
     }
 
+    .profile-name {
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .profile-number {
+      font-size: 36px;
+      font-weight: bold;
+      color: #0b4d3e;
+      margin: 10px 0;
+    }
+
+    .streak {
+      font-size: 20px;
+      margin: 10px 0;
+    }
+
+    .message {
+      background: #eef7f3;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 15px;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-top: 15px;
+    }
+
+    .calendar-day {
+      min-height: 48px;
+      padding: 6px;
+      border-radius: 8px;
+      background: #f5f5f5;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .calendar-day.meeting {
+      background: #dcefe8;
+      color: #0b4d3e;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .calendar-day.today {
+      border: 2px solid #16846a;
+    }
+
+    .ranking-row,
+    .meeting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .ranking-row:last-child,
+    .meeting-row:last-child {
+      border-bottom: none;
+    }
+
+    .small {
+      color: #777;
+      font-size: 13px;
+    }
+
+    /* MODAL */
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.58);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 430px;
+      background: white;
+      border-radius: 24px;
+      padding: 30px 24px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      animation: popup 0.2s ease-out;
+    }
+
+    @keyframes popup {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .modal-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .modal h2 {
+      margin: 5px 0;
+      font-size: 25px;
+    }
+
+    .modal-counter {
+      font-size: 38px;
+      font-weight: bold;
+      color: #0b4d3e;
+      margin: 18px 0 5px;
+    }
+
+    .modal-streak {
+      font-size: 20px;
+      margin: 8px 0 15px;
+    }
+
+    .modal-message {
+      background: #eef7f3;
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 22px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 600px) {
+      main {
+        padding: 18px 12px 40px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .hero h2 {
+        font-size: 24px;
+      }
+    }
   </style>
-
 </head>
 
 <body>
 
-<div class="container">
+<header>
+  <h1>ROTARACT</h1>
+  <a href="admin.html">Administració</a>
+</header>
 
-  <div class="top">
+<main>
 
-    <div>
+  <section class="card hero">
+    <h2>Reunió</h2>
+    <div id="meetingDate" class="meeting-date">Carregant...</div>
 
-      <div class="logo">
-        ROTARACT
-      </div>
+    <div id="attendanceBig" class="attendance-big">0 / 0</div>
+    <div id="attendancePercentage">0%</div>
 
-      <h1>
-        Check-in de reunió
-      </h1>
-
+    <div class="progress">
+      <div id="progressBar" class="progress-bar"></div>
     </div>
+  </section>
 
-    <a href="admin.html">
-      Administració
-    </a>
+  <section class="card">
+    <h3>👋 Fes check-in</h3>
+    <p class="small">Busca el teu nom i confirma que has vingut.</p>
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Escriu el teu nom..."
+      autocomplete="off"
+    >
+
+    <div id="memberList" class="member-list"></div>
+  </section>
+
+  <section id="profileSection" class="card profile hidden">
+    <div id="profileName" class="profile-name"></div>
+
+    <div id="profileCounter" class="profile-number">0 / 0</div>
+
+    <div id="profilePercentage"></div>
+
+    <div id="profileStreak" class="streak"></div>
+
+    <div id="profileMessage" class="message"></div>
+  </section>
+
+  <section class="card">
+    <h3>📅 Calendari</h3>
+    <div id="calendar" class="calendar"></div>
+  </section>
+
+  <section class="card">
+    <h3>🏆 Classificació</h3>
+    <div id="ranking"></div>
+  </section>
+
+  <section class="card">
+    <h3>📊 Estadístiques</h3>
+    <div id="meetingStats"></div>
+  </section>
+
+</main>
+
+<!-- MODAL CHECK-IN -->
+
+<div id="checkinModal" class="modal-overlay hidden">
+  <div class="modal">
+
+    <div id="modalIcon" class="modal-icon">🔥</div>
+
+    <h2 id="modalTitle">Hola!</h2>
+
+    <p id="modalThanks"></p>
+
+    <div id="modalCounter" class="modal-counter"></div>
+
+    <div id="modalStreak" class="modal-streak"></div>
+
+    <div id="modalMessage" class="modal-message"></div>
+
+    <button onclick="closeCheckinModal()">
+      Continuar
+    </button>
 
   </div>
-
-
-  <div id="app"></div>
-
 </div>
 
-
 <script>
+  const SUPABASE_URL = "https://ocyzergjotoobbtezxuw.supabase.co";
 
-  /*
-   * ==========================================================
-   * SUPABASE
-   * ==========================================================
-   */
+  // PEGA AQUÍ TU PUBLISHABLE KEY
+  const SUPABASE_ANON_KEY = "PEGA_AQUI_TU_PUBLISHABLE_KEY";
 
-  const SUPABASE_URL =
-    "https://ocyzergjotoobbtezxuw.supabase.co";
+  const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
 
-  const SUPABASE_ANON_KEY =
-    "sb_publishable_1BT5wV69t3hyzJNuOWvkwA_bu2U42uq";
+  let members = [];
+  let meetings = [];
+  let attendance = [];
+  let activeMeeting = null;
 
-
-  const db =
-    supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY
-    );
-
-
-  const app =
-    document.getElementById("app");
-
-
-  function escapeHTML(value) {
-
-    return String(value)
-      .replace(/[&<>"']/g, character => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      })[character]);
-
-  }
-
-
-  async function start() {
-
-    showPublicCheckIn();
-
-  }
-
-
-  async function showPublicCheckIn(message = "") {
-
-    const {
-      data: meetings,
-      error: meetingsError
-    } =
-      await db
-        .from("meetings")
+  async function loadData() {
+    const [
+      membersResponse,
+      meetingsResponse,
+      attendanceResponse
+    ] = await Promise.all([
+      supabaseClient
+        .from("members")
         .select("*")
         .eq("active", true)
-        .order("date", { ascending: false });
+        .order("name"),
 
-    const activeMeeting = meetings?.[0];
+      supabaseClient
+        .from("meetings")
+        .select("*")
+        .order("date", { ascending: false }),
 
-    const {
-      data: members,
-      error: membersError
-    } =
-      await db
-        .from("members")
-        .select("id, name")
-        .eq("active", true)
-        .order("name");
+      supabaseClient
+        .from("attendance")
+        .select("*")
+    ]);
 
-    if (meetingsError || membersError) {
-
-      app.innerHTML = `
-        <div class="card">
-          <h2>No s'ha pogut carregar la reunió</h2>
-          <div class="error">
-            ${escapeHTML((meetingsError || membersError).message)}
-          </div>
-        </div>
-      `;
-
+    if (membersResponse.error) {
+      console.error(membersResponse.error);
       return;
-
     }
 
-    app.innerHTML = `
-      <div class="card">
-        <h2>🟢 ${activeMeeting ? "Reunió activa" : "No hi ha reunió activa"}</h2>
-        <p>
-          ${activeMeeting
-            ? `Reunió del <b>${escapeHTML(activeMeeting.date)}</b>. Busca el teu nom per registrar l'assistència.`
-            : "Quan l'administrador obri una reunió, podràs fer el check-in aquí."
-          }
-        </p>
-      </div>
+    if (meetingsResponse.error) {
+      console.error(meetingsResponse.error);
+      return;
+    }
 
-      ${activeMeeting ? `
-        <div class="card">
-          <h2>👋 Fes el teu check-in</h2>
-          <input
-            id="memberSearch"
-            type="search"
-            placeholder="Busca el teu nom"
-            oninput="filterMembers()"
-            autocomplete="off"
-          >
-          <div id="memberList">
-            ${members?.map(member => `
-              <div class="row member-row" data-name="${escapeHTML(member.name.toLowerCase())}">
-                <span>${escapeHTML(member.name)}</span>
-                <button onclick="checkIn('${member.id}')">Fer check-in</button>
-              </div>
-            `).join("") || "<p>Encara no hi ha membres.</p>"}
-          </div>
-          <div id="checkInMessage">${message}</div>
-        </div>
+    if (attendanceResponse.error) {
+      console.error(attendanceResponse.error);
+      return;
+    }
 
-        <div class="card">
-          <h2>➕ No trobes el teu nom?</h2>
-          <p>Afegeix-te i registra el check-in en un sol pas.</p>
-          <input id="newMemberName" placeholder="Nom complet" autocomplete="name">
-          <br><br>
-          <button onclick="addPublicMember()">Afegir i fer check-in</button>
-        </div>
-      ` : ""}
-    `;
+    members = membersResponse.data || [];
+    meetings = meetingsResponse.data || [];
+    attendance = attendanceResponse.data || [];
 
+    activeMeeting = meetings.find(m => m.active === true) || null;
+
+    renderMeeting();
+    renderMembers();
+    renderCalendar();
+    renderRanking();
+    renderMeetingStats();
   }
 
+  function formatDate(dateString) {
+    if (!dateString) return "";
 
-  function filterMembers() {
+    const date = new Date(dateString + "T00:00:00");
 
-    const search =
-      document
-        .getElementById("memberSearch")
-        .value
-        .trim()
-        .toLowerCase();
-
-    document
-      .querySelectorAll(".member-row")
-      .forEach(row => {
-        row.classList.toggle(
-          "hidden",
-          !row.dataset.name.includes(search)
-        );
-      });
-
+    return date.toLocaleDateString("ca-ES", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
   }
 
-
-  async function checkIn(memberId) {
-
-    const {
-      data: meetings
-    } =
-      await db
-        .from("meetings")
-        .select("id")
-        .eq("active", true)
-        .limit(1);
-
-    const activeMeeting = meetings?.[0];
+  function renderMeeting() {
+    const dateElement = document.getElementById("meetingDate");
+    const attendanceBig = document.getElementById("attendanceBig");
+    const percentageElement = document.getElementById("attendancePercentage");
+    const progressBar = document.getElementById("progressBar");
 
     if (!activeMeeting) {
+      dateElement.textContent = "No hi ha cap reunió activa";
 
-      showPublicCheckIn(`
-        <div class="error">Ara mateix no hi ha cap reunió activa.</div>
-      `);
-
-      return;
-
-    }
-
-    const {
-      error
-    } =
-      await db
-        .from("attendance")
-        .insert({
-          member_id: memberId,
-          meeting_id: activeMeeting.id
-        });
-
-    if (error && !error.message.toLowerCase().includes("duplicate")) {
-
-      showPublicCheckIn(`
-        <div class="error">${escapeHTML(error.message)}</div>
-      `);
+      attendanceBig.textContent = "0 / 0";
+      percentageElement.textContent = "0%";
+      progressBar.style.width = "0%";
 
       return;
-
     }
 
-    const streak = await getStreak(memberId);
+    dateElement.textContent = formatDate(activeMeeting.date);
 
-    showPublicCheckIn(`
-      <div class="success">
-        ✅ Assistència registrada! La teva ratxa és de <b>${streak} reunió${streak === 1 ? "" : "ns"}</b>.
-      </div>
-    `);
+    const attended = attendance.filter(
+      a => a.meeting_id === activeMeeting.id
+    ).length;
 
+    const total = members.length;
+
+    const percentage = total > 0
+      ? Math.round((attended / total) * 100)
+      : 0;
+
+    attendanceBig.textContent = `${attended} / ${total}`;
+    percentageElement.textContent = `${percentage}%`;
+    progressBar.style.width = `${percentage}%`;
   }
 
+  function renderMembers(filter = "") {
+    const container = document.getElementById("memberList");
 
-  async function addPublicMember() {
+    const normalized = filter.toLowerCase().trim();
 
-    const name =
-      document
-        .getElementById("newMemberName")
-        .value
-        .trim();
+    const filtered = members.filter(member =>
+      member.name.toLowerCase().includes(normalized)
+    );
 
-    if (!name) {
+    container.innerHTML = "";
 
-      alert("Escriu el teu nom.");
+    filtered.forEach(member => {
+      const alreadyChecked = activeMeeting &&
+        attendance.some(a =>
+          a.member_id === member.id &&
+          a.meeting_id === activeMeeting.id
+        );
 
+      const div = document.createElement("div");
+
+      div.className = "member";
+
+      div.innerHTML = `
+        <span class="member-name">${escapeHtml(member.name)}</span>
+        ${
+          alreadyChecked
+            ? `<span class="checked">✓ Ja has vingut</span>`
+            : `<span>Fer check-in →</span>`
+        }
+      `;
+
+      if (!alreadyChecked) {
+        div.onclick = () => checkIn(member);
+      }
+
+      container.appendChild(div);
+    });
+  }
+
+  async function checkIn(member) {
+    if (!activeMeeting) {
+      alert("Ara mateix no hi ha cap reunió activa.");
       return;
-
     }
 
-    const {
-      data: member,
-      error
-    } =
-      await db
-        .from("members")
-        .insert({ name, active: true })
-        .select("id")
-        .single();
+    const alreadyChecked = attendance.some(a =>
+      a.member_id === member.id &&
+      a.meeting_id === activeMeeting.id
+    );
+
+    if (alreadyChecked) {
+      showAlreadyChecked(member);
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("attendance")
+      .insert({
+        member_id: member.id,
+        meeting_id: activeMeeting.id
+      })
+      .select()
+      .single();
 
     if (error) {
+      if (error.code === "23505") {
+        showAlreadyChecked(member);
+        return;
+      }
 
-      showPublicCheckIn(`
-        <div class="error">${escapeHTML(error.message)}</div>
-      `);
-
+      console.error(error);
+      alert("Hi ha hagut un error fent el check-in.");
       return;
-
     }
 
-    await checkIn(member.id);
+    attendance.push(data);
 
+    renderMeeting();
+    renderMembers(
+      document.getElementById("searchInput").value
+    );
+
+    await showCheckinSuccess(member);
   }
 
-
-  async function getStreak(memberId) {
-
-    const {
-      data: meetings
-    } =
-      await db
-        .from("meetings")
-        .select("id, date")
-        .order("date", { ascending: false });
-
-    const {
-      data: attendances
-    } =
-      await db
-        .from("attendance")
-        .select("meeting_id")
-        .eq("member_id", memberId);
-
-    const attendedMeetings = new Set(
-      attendances?.map(attendance => attendance.meeting_id)
+  async function showCheckinSuccess(member) {
+    const memberAttendances = attendance.filter(
+      a => a.member_id === member.id
     );
+
+    const totalMeetings = meetings.length;
+
+    const attendedMeetings = memberAttendances.length;
+
+    const percentage = totalMeetings > 0
+      ? Math.round((attendedMeetings / totalMeetings) * 100)
+      : 0;
+
+    const streak = calculateCurrentStreak(member.id);
+
+    const message = getMotivationalMessage(
+      percentage,
+      streak,
+      attendedMeetings,
+      totalMeetings
+    );
+
+    document.getElementById("modalTitle").textContent =
+      `Hola, ${member.name}!`;
+
+    document.getElementById("modalThanks").textContent =
+      "Gràcies per venir a la reunió! 🎉";
+
+    document.getElementById("modalCounter").textContent =
+      `${attendedMeetings} de ${totalMeetings}`;
+
+    document.getElementById("modalStreak").textContent =
+      streak > 0
+        ? `🔥 Ratxa actual: ${streak}`
+        : "🔥 Comença una nova ratxa!";
+
+    document.getElementById("modalMessage").textContent =
+      message;
+
+    document.getElementById("modalIcon").textContent =
+      percentage >= 75 ? "🔥" :
+      percentage >= 50 ? "😎" :
+      percentage >= 25 ? "👀" :
+      "🫣";
+
+    document
+      .getElementById("checkinModal")
+      .classList.remove("hidden");
+  }
+
+  function showAlreadyChecked(member) {
+    document.getElementById("modalIcon").textContent = "✅";
+
+    document.getElementById("modalTitle").textContent =
+      `Hola, ${member.name}!`;
+
+    document.getElementById("modalThanks").textContent =
+      "Ja havies fet el check-in d'aquesta reunió.";
+
+    const memberAttendances = attendance.filter(
+      a => a.member_id === member.id
+    );
+
+    document.getElementById("modalCounter").textContent =
+      `${memberAttendances.length} de ${meetings.length}`;
+
+    document.getElementById("modalStreak").textContent =
+      `🔥 Ratxa actual: ${calculateCurrentStreak(member.id)}`;
+
+    document.getElementById("modalMessage").textContent =
+      "Tot correcte! Ens veiem a la propera reunió 😉";
+
+    document
+      .getElementById("checkinModal")
+      .classList.remove("hidden");
+  }
+
+  function closeCheckinModal() {
+    document
+      .getElementById("checkinModal")
+      .classList.add("hidden");
+
+    document.getElementById("searchInput").value = "";
+    renderMembers();
+  }
+
+  function calculateCurrentStreak(memberId) {
+    const sortedMeetings = [...meetings]
+      .filter(m => m.date)
+      .sort((a, b) =>
+        new Date(b.date) - new Date(a.date)
+      );
 
     let streak = 0;
 
-    for (const meeting of meetings || []) {
+    for (const meeting of sortedMeetings) {
+      const attended = attendance.some(a =>
+        a.member_id === memberId &&
+        a.meeting_id === meeting.id
+      );
 
-      if (!attendedMeetings.has(meeting.id)) break;
-
-      streak += 1;
-
+      if (attended) {
+        streak++;
+      } else {
+        break;
+      }
     }
 
     return streak;
-
   }
 
-
-  function showLogin() {
-
-    app.innerHTML = `
-
-      <div class="card">
-
-        <h2>
-          🔐 Accés administrador
-        </h2>
-
-        <p>
-          Inicia sessió per gestionar
-          les reunions.
-        </p>
-
-        <input
-          id="email"
-          type="email"
-          placeholder="Email"
-        >
-
-        <br><br>
-
-        <input
-          id="password"
-          type="password"
-          placeholder="Contrasenya"
-        >
-
-        <br><br>
-
-        <button
-          onclick="login()">
-
-          Entrar
-
-        </button>
-
-        <div id="loginError"></div>
-
-      </div>
-    `;
-
-  }
-
-
-  async function login() {
-
-    const email =
-      document.getElementById("email").value;
-
-    const password =
-      document.getElementById("password").value;
-
-
-    const {
-      error
-    } =
-      await db.auth.signInWithPassword({
-
-        email,
-
-        password
-
-      });
-
-
-    if (error) {
-
-      document.getElementById(
-        "loginError"
-      ).innerHTML = `
-
-        <div class="error">
-          ${escapeHTML(error.message)}
-        </div>
-
-      `;
-
-      return;
-
+  function getMotivationalMessage(
+    percentage,
+    streak,
+    attended,
+    total
+  ) {
+    if (total === 1) {
+      return "🎉 Primera reunió registrada! A veure si mantenim aquesta ratxa!";
     }
 
+    if (percentage === 100) {
+      return "🏆 Estàs on fire! No et perds ni una. Mantén aquesta ratxa!";
+    }
 
-    showDashboard();
+    if (percentage >= 90) {
+      return "🔥 Quin ritme! Pràcticament ets part del mobiliari. Mantén-ho!";
+    }
 
+    if (percentage >= 75) {
+      return "😎 Molt bé! Estàs fent una gran feina. Continua així!";
+    }
+
+    if (percentage >= 50) {
+      return "👀 Et veiem de tant en tant... però encara pots millorar!";
+    }
+
+    if (percentage >= 25) {
+      return "🫣 Fa temps que no et veiem gaire... no t'oblidis de nosaltres!";
+    }
+
+    return "💀 Ja ni et reconeixem! 😂 A veure si et deixes veure més!";
   }
 
+  function renderCalendar() {
+    const container = document.getElementById("calendar");
 
-  async function logout() {
+    const now = new Date();
 
-    await db.auth.signOut();
+    const year = now.getFullYear();
+    const month = now.getMonth();
 
-    showLogin();
+    const daysInMonth =
+      new Date(year, month + 1, 0).getDate();
 
-  }
+    container.innerHTML = "";
 
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
 
-  async function showDashboard() {
+      const dateString =
+        date.toISOString().split("T")[0];
 
-    const {
-      data: members
-    } =
-      await db
-        .from("members")
-        .select("*")
-        .order("name");
-
-
-    const {
-      data: meetings
-    } =
-      await db
-        .from("meetings")
-        .select("*")
-        .order("date", {
-          ascending: false
-        });
-
-
-    const active =
-      meetings?.find(
-        meeting => meeting.active
+      const meeting = meetings.find(
+        m => m.date === dateString
       );
 
+      const div = document.createElement("div");
 
-    app.innerHTML = `
+      div.className = "calendar-day";
 
-      ${
-        active
-        ?
-        `
-        <div class="card">
+      if (meeting) {
+        div.classList.add("meeting");
 
-          <h2>
-            🟢 Reunió activa
-          </h2>
+        const count = attendance.filter(
+          a => a.meeting_id === meeting.id
+        ).length;
 
-          <p>
-            <b>
-              ${active.date}
-            </b>
-          </p>
+        div.innerHTML = `
+          <strong>${day}</strong><br>
+          👥 ${count}
+        `;
 
-          <button
-            class="danger"
-            onclick="closeMeeting('${active.id}')">
-
-            Tancar reunió
-
-          </button>
-
-        </div>
-        `
-        :
-        `
-        <div class="card">
-
-          <h2>
-            🔴 No hi ha reunió activa
-          </h2>
-
-          <p>
-            Crea una reunió per començar
-            a acceptar assistències.
-          </p>
-
-        </div>
-        `
+        div.onclick = () => {
+          alert(
+            `Reunió del ${formatDate(meeting.date)}\n\n` +
+            `${count} persones han fet check-in.`
+          );
+        };
+      } else {
+        div.innerHTML = `<strong>${day}</strong>`;
       }
 
+      container.appendChild(div);
+    }
+  }
 
-      <div class="grid">
+  function renderRanking() {
+    const container = document.getElementById("ranking");
 
-        <div class="card">
+    const totalMeetings = meetings.length;
 
-          <h2>
-            ➕ Nova reunió
-          </h2>
+    const ranking = members.map(member => {
+      const attended = attendance.filter(
+        a => a.member_id === member.id
+      ).length;
 
-          <input
-            id="meetingDate"
-            type="date"
-          >
+      const percentage = totalMeetings > 0
+        ? Math.round((attended / totalMeetings) * 100)
+        : 0;
 
-          <br><br>
+      return {
+        ...member,
+        attended,
+        percentage
+      };
+    });
 
-          <button
-            onclick="createMeeting()">
+    ranking.sort((a, b) =>
+      b.percentage - a.percentage
+    );
 
-            Crear i activar
+    container.innerHTML = "";
 
-          </button>
+    ranking.forEach((member, index) => {
+      const row = document.createElement("div");
 
+      row.className = "ranking-row";
+
+      row.innerHTML = `
+        <div>
+          <strong>${index + 1}. ${escapeHtml(member.name)}</strong>
+          <div class="small">
+            ${member.attended} de ${totalMeetings} reunions
+          </div>
         </div>
 
+        <strong>${member.percentage}%</strong>
+      `;
 
-        <div class="card">
+      container.appendChild(row);
+    });
+  }
 
-          <h2>
-            👥 Nou membre
-          </h2>
+  function renderMeetingStats() {
+    const container = document.getElementById("meetingStats");
 
-          <input
-            id="memberName"
-            placeholder="Nom complet"
-          >
+    container.innerHTML = "";
 
-          <br><br>
+    meetings.forEach(meeting => {
+      const count = attendance.filter(
+        a => a.meeting_id === meeting.id
+      ).length;
 
-          <button
-            onclick="addMember()">
+      const row = document.createElement("div");
 
-            Afegir membre
+      row.className = "meeting-row";
 
-          </button>
-
+      row.innerHTML = `
+        <div>
+          <strong>${formatDate(meeting.date)}</strong>
         </div>
 
-      </div>
+        <strong>${count} persones</strong>
+      `;
 
-
-      <div class="card">
-
-        <div class="top">
-
-          <h2>
-            👥 Membres
-          </h2>
-
-          <b>
-            ${members?.length || 0}
-          </b>
-
-        </div>
-
-
-        ${
-          members?.map(member => `
-
-            <div class="row">
-
-              <span>
-
-                ${escapeHTML(member.name)}
-
-                ${
-                  !member.active
-                    ? " — inactiu"
-                    : ""
-                }
-
-              </span>
-
-
-              <button
-                class="secondary"
-                onclick="
-                  toggleMember(
-                    '${member.id}',
-                    ${!member.active}
-                  )
-                ">
-
-                ${
-                  member.active
-                    ? "Desactivar"
-                    : "Activar"
-                }
-
-              </button>
-
-            </div>
-
-          `).join("")
-          ||
-          `
-            <p>
-              Encara no hi ha membres.
-            </p>
-          `
-        }
-
-      </div>
-
-
-      <div class="card">
-
-        <h2>
-          📅 Reunions
-        </h2>
-
-
-        ${
-          meetings?.map(meeting => `
-
-            <div class="row">
-
-              <span>
-
-                ${meeting.date}
-
-                ${
-                  meeting.active
-                    ? " — 🟢 activa"
-                    : ""
-                }
-
-              </span>
-
-
-              <button
-                class="danger"
-                onclick="
-                  deleteMeeting(
-                    '${meeting.id}'
-                  )
-                ">
-
-                Eliminar
-
-              </button>
-
-            </div>
-
-          `).join("")
-          ||
-          `
-            <p>
-              No hi ha reunions.
-            </p>
-          `
-        }
-
-      </div>
-
-
-      <div class="card">
-
-        <button
-          class="secondary"
-          onclick="logout()">
-
-          Tancar sessió
-
-        </button>
-
-      </div>
-    `;
-
+      container.appendChild(row);
+    });
   }
 
-
-  async function createMeeting() {
-
-    const date =
-      document.getElementById(
-        "meetingDate"
-      ).value;
-
-
-    if (!date) {
-
-      alert(
-        "Selecciona una data."
-      );
-
-      return;
-
-    }
-
-
-    /*
-     * Només pot existir
-     * una reunió activa.
-     */
-
-    await db
-      .from("meetings")
-      .update({
-        active: false
-      })
-      .eq(
-        "active",
-        true
-      );
-
-
-    const {
-      error
-    } =
-      await db
-        .from("meetings")
-        .insert({
-
-          date,
-
-          active: true
-
-        });
-
-
-    if (error) {
-
-      alert(error.message);
-
-      return;
-
-    }
-
-
-    showDashboard();
-
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
   }
 
+  document
+    .getElementById("searchInput")
+    .addEventListener("input", event => {
+      renderMembers(event.target.value);
+    });
 
-  async function closeMeeting(id) {
-
-    await db
-      .from("meetings")
-      .update({
-        active: false
-      })
-      .eq(
-        "id",
-        id
-      );
-
-
-    showDashboard();
-
-  }
-
-
-  async function addMember() {
-
-    const name =
-      document
-        .getElementById(
-          "memberName"
-        )
-        .value
-        .trim();
-
-
-    if (!name) {
-
-      alert(
-        "Escriu un nom."
-      );
-
-      return;
-
-    }
-
-
-    const {
-      error
-    } =
-      await db
-        .from("members")
-        .insert({
-
-          name,
-
-          active: true
-
-        });
-
-
-    if (error) {
-
-      alert(error.message);
-
-      return;
-
-    }
-
-
-    showDashboard();
-
-  }
-
-
-  async function toggleMember(
-    id,
-    active
-  ) {
-
-    await db
-      .from("members")
-      .update({
-        active
-      })
-      .eq(
-        "id",
-        id
-      );
-
-
-    showDashboard();
-
-  }
-
-
-  async function deleteMeeting(id) {
-
-    const confirmed =
-      confirm(
-        "Vols eliminar aquesta reunió i totes les seves assistències?"
-      );
-
-
-    if (!confirmed) return;
-
-
-    await db
-      .from("attendance")
-      .delete()
-      .eq(
-        "meeting_id",
-        id
-      );
-
-
-    await db
-      .from("meetings")
-      .delete()
-      .eq(
-        "id",
-        id
-      );
-
-
-    showDashboard();
-
-  }
-
-
-  start();
-
+  loadData();
 </script>
 
 </body>

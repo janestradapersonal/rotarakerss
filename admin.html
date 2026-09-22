@@ -1,808 +1,897 @@
 <!DOCTYPE html>
 <html lang="ca">
-
 <head>
-
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <title>Administració - Rotaract</title>
 
-  <title>
-    Rotaract · Administració
-  </title>
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-
-    :root {
-      --green: #0B4D3E;
-      --green-light: #16846A;
-      --bg: #F6F8F7;
-      --white: #FFFFFF;
-      --text: #17211D;
-      --muted: #718078;
-      --border: #E1E8E4;
-      --red: #B42318;
-    }
-
     * {
       box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family:
-        Inter,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
+      font-family: Arial, sans-serif;
+      background: #f5f7f6;
+      color: #123;
     }
 
-    button,
-    input {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: auto;
-      padding: 25px 16px 50px;
-    }
-
-    .top {
+    header {
+      background: #0b4d3e;
+      color: white;
+      padding: 18px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 25px;
     }
 
-    .logo {
-      color: var(--green);
-      font-weight: 900;
-      letter-spacing: 2px;
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header a {
+      color: white;
+      text-decoration: none;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: auto;
+      padding: 25px 18px 50px;
     }
 
     .card {
       background: white;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 18px;
-      margin: 12px 0;
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+    h2,
+    h3 {
+      margin-top: 0;
     }
 
     input {
       width: 100%;
       padding: 13px;
-      border: 1px solid var(--border);
+      border: 1px solid #ddd;
       border-radius: 10px;
-      outline: none;
-    }
-
-    input:focus {
-      border-color: var(--green-light);
+      font-size: 15px;
+      margin-bottom: 10px;
     }
 
     button {
-      padding: 11px 14px;
-      border: 0;
+      border: none;
       border-radius: 10px;
-      background: var(--green);
+      padding: 11px 15px;
+      background: #0b4d3e;
       color: white;
-      font-weight: 800;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 3px;
     }
 
-    .secondary {
-      background: white;
-      color: var(--green);
-      border: 1px solid var(--border);
+    button:hover {
+      opacity: 0.9;
     }
 
     .danger {
-      background: var(--red);
+      background: #c0392b;
     }
 
-    .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      padding: 11px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .row:last-child {
-      border-bottom: 0;
-    }
-
-    .error {
-      background: #FEF3F2;
-      color: var(--red);
-      padding: 12px;
-      border-radius: 10px;
-      margin-top: 12px;
+    .secondary {
+      background: #e9efec;
+      color: #0b4d3e;
     }
 
     .success {
-      background: #E8F7EF;
-      color: #067647;
-      padding: 12px;
-      border-radius: 10px;
-      margin-top: 12px;
+      background: #16846a;
     }
 
     .hidden {
-      display: none;
+      display: none !important;
     }
 
-    @media(max-width:650px) {
+    .login {
+      max-width: 420px;
+      margin: 70px auto;
+    }
 
-      .grid {
-        grid-template-columns: 1fr;
-      }
+    .meeting-row,
+    .member-row {
+      border-bottom: 1px solid #eee;
+      padding: 16px 0;
+    }
 
-      .top {
+    .meeting-row:last-child,
+    .member-row:last-child {
+      border-bottom: none;
+    }
+
+    .row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .small {
+      color: #777;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #dcefe8;
+      color: #0b4d3e;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .attendee-list {
+      background: #f7f9f8;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 12px;
+    }
+
+    .attendee {
+      padding: 7px 0;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .attendee:last-child {
+      border-bottom: none;
+    }
+
+    .empty {
+      color: #777;
+      padding: 10px 0;
+    }
+
+    .top-actions {
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .row-top {
+        flex-direction: column;
         align-items: flex-start;
-        gap: 15px;
       }
-
     }
-
   </style>
-
 </head>
 
 <body>
 
-<div class="container">
+<header>
+  <h1>ROTARACT · ADMIN</h1>
+  <a href="index.html">← Tornar a la web</a>
+</header>
 
-  <div class="top">
+<!-- LOGIN -->
 
-    <div>
+<div id="loginSection" class="login card">
 
-      <div class="logo">
-        ROTARACT
-      </div>
+  <h2>🔐 Administració</h2>
 
-      <h1>
-        Administració
-      </h1>
+  <p class="small">
+    Inicia sessió per gestionar les reunions i els membres.
+  </p>
 
-    </div>
+  <input
+    id="email"
+    type="email"
+    placeholder="Email"
+  >
 
-    <a href="index.html">
-      Web pública
-    </a>
+  <input
+    id="password"
+    type="password"
+    placeholder="Contrasenya"
+  >
 
-  </div>
+  <button onclick="login()">
+    Entrar
+  </button>
 
-
-  <div id="app"></div>
+  <p id="loginError" style="color:#c0392b;"></p>
 
 </div>
 
+<!-- ADMIN -->
+
+<main id="adminSection" class="hidden">
+
+  <div class="top-actions">
+    <button class="secondary" onclick="logout()">
+      Tancar sessió
+    </button>
+  </div>
+
+  <!-- REUNIÓ ACTIVA -->
+
+  <section class="card">
+
+    <h2>🟢 Reunió activa</h2>
+
+    <div id="activeMeeting"></div>
+
+    <hr>
+
+    <h3>Crear nova reunió</h3>
+
+    <input
+      type="date"
+      id="meetingDateInput"
+    >
+
+    <button onclick="createMeeting()">
+      Crear reunió
+    </button>
+
+    <button
+      id="closeMeetingButton"
+      class="danger hidden"
+      onclick="closeActiveMeeting()"
+    >
+      Tancar reunió activa
+    </button>
+
+  </section>
+
+  <!-- HISTORIAL -->
+
+  <section class="card">
+
+    <h2>📅 Historial de reunions</h2>
+
+    <p class="small">
+      Aquí pots veure qui va assistir a cada reunió.
+    </p>
+
+    <div id="meetingsList"></div>
+
+  </section>
+
+  <!-- MEMBRES -->
+
+  <section class="card">
+
+    <h2>👥 Membres</h2>
+
+    <input
+      type="text"
+      id="newMemberName"
+      placeholder="Nom del nou membre"
+    >
+
+    <button onclick="addMember()">
+      Afegir membre
+    </button>
+
+    <div id="membersList"></div>
+
+  </section>
+
+</main>
 
 <script>
-
-  /*
-   * ==========================================================
-   * SUPABASE
-   * ==========================================================
-   */
 
   const SUPABASE_URL =
     "https://ocyzergjotoobbtezxuw.supabase.co";
 
+  // PEGA AQUÍ LA TEVA PUBLISHABLE KEY
   const SUPABASE_ANON_KEY =
-    "sb_publishable_1BT5wV69t3hyzJNuOWvkwA_bu2U42uq";
+    "PEGA_AQUI_TU_PUBLISHABLE_KEY";
 
-
-  const db =
+  const supabaseClient =
     supabase.createClient(
       SUPABASE_URL,
       SUPABASE_ANON_KEY
     );
 
+  let members = [];
+  let meetings = [];
+  let attendance = [];
 
-  const app =
-    document.getElementById("app");
-
-
-  function escapeHTML(value) {
-
-    return String(value)
-      .replace(/[&<>"']/g, character => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      })[character]);
-
-  }
-
-
-  async function start() {
+  async function checkSession() {
 
     const {
-      data: {
-        session
-      }
-    } =
-      await db.auth.getSession();
+      data: { session }
+    } = await supabaseClient.auth.getSession();
 
-
-    if (!session) {
-
-      showLogin();
-
+    if (session) {
+      showAdmin();
     } else {
-
-      showDashboard();
-
+      showLogin();
     }
-
   }
-
 
   function showLogin() {
+    document
+      .getElementById("loginSection")
+      .classList.remove("hidden");
 
-    app.innerHTML = `
-
-      <div class="card">
-
-        <h2>
-          🔐 Accés administrador
-        </h2>
-
-        <p>
-          Inicia sessió per gestionar
-          les reunions.
-        </p>
-
-        <input
-          id="email"
-          type="email"
-          placeholder="Email"
-        >
-
-        <br><br>
-
-        <input
-          id="password"
-          type="password"
-          placeholder="Contrasenya"
-        >
-
-        <br><br>
-
-        <button
-          onclick="login()">
-
-          Entrar
-
-        </button>
-
-        <div id="loginError"></div>
-
-      </div>
-    `;
-
+    document
+      .getElementById("adminSection")
+      .classList.add("hidden");
   }
 
+  function showAdmin() {
+    document
+      .getElementById("loginSection")
+      .classList.add("hidden");
+
+    document
+      .getElementById("adminSection")
+      .classList.remove("hidden");
+
+    loadAdminData();
+  }
 
   async function login() {
 
     const email =
-      document.getElementById("email").value;
+      document.getElementById("email").value.trim();
 
     const password =
       document.getElementById("password").value;
 
-
     const {
       error
-    } =
-      await db.auth.signInWithPassword({
-
-        email,
-
-        password
-
-      });
-
+    } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
 
     if (error) {
-
-      document.getElementById(
-        "loginError"
-      ).innerHTML = `
-
-        <div class="error">
-          ${escapeHTML(error.message)}
-        </div>
-
-      `;
-
+      document.getElementById("loginError").textContent =
+        "Email o contrasenya incorrectes.";
       return;
-
     }
 
+    document.getElementById("loginError").textContent = "";
 
-    showDashboard();
-
+    showAdmin();
   }
-
 
   async function logout() {
 
-    await db.auth.signOut();
+    await supabaseClient.auth.signOut();
 
     showLogin();
-
   }
 
+  async function loadAdminData() {
 
-  async function showDashboard() {
+    const [
+      membersResponse,
+      meetingsResponse,
+      attendanceResponse
+    ] = await Promise.all([
 
-    const {
-      data: members
-    } =
-      await db
+      supabaseClient
         .from("members")
         .select("*")
-        .order("name");
+        .order("name"),
 
-
-    const {
-      data: meetings
-    } =
-      await db
+      supabaseClient
         .from("meetings")
         .select("*")
         .order("date", {
           ascending: false
-        });
+        }),
 
+      supabaseClient
+        .from("attendance")
+        .select("*")
+    ]);
+
+    if (membersResponse.error) {
+      console.error(membersResponse.error);
+      return;
+    }
+
+    if (meetingsResponse.error) {
+      console.error(meetingsResponse.error);
+      return;
+    }
+
+    if (attendanceResponse.error) {
+      console.error(attendanceResponse.error);
+      return;
+    }
+
+    members = membersResponse.data || [];
+    meetings = meetingsResponse.data || [];
+    attendance = attendanceResponse.data || [];
+
+    renderActiveMeeting();
+    renderMeetings();
+    renderMembers();
+  }
+
+  function formatDate(dateString) {
+
+    const date =
+      new Date(dateString + "T00:00:00");
+
+    return date.toLocaleDateString(
+      "ca-ES",
+      {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }
+    );
+  }
+
+  function renderActiveMeeting() {
+
+    const container =
+      document.getElementById("activeMeeting");
 
     const active =
-      meetings?.find(
-        meeting => meeting.active
+      meetings.find(
+        meeting => meeting.active === true
       );
 
+    const closeButton =
+      document.getElementById("closeMeetingButton");
 
-    app.innerHTML = `
+    if (!active) {
 
-      ${
-        active
-        ?
-        `
-        <div class="card">
+      container.innerHTML =
+        `<p class="empty">No hi ha cap reunió activa.</p>`;
 
-          <h2>
-            🟢 Reunió activa
-          </h2>
+      closeButton.classList.add("hidden");
 
-          <p>
-            <b>
-              ${active.date}
-            </b>
-          </p>
+      return;
+    }
 
-          <button
-            class="danger"
-            onclick="closeMeeting('${active.id}')">
+    const count =
+      attendance.filter(
+        a => a.meeting_id === active.id
+      ).length;
 
-            Tancar reunió
-
-          </button>
-
-        </div>
-        `
-        :
-        `
-        <div class="card">
-
-          <h2>
-            🔴 No hi ha reunió activa
-          </h2>
-
-          <p>
-            Crea una reunió per començar
-            a acceptar assistències.
-          </p>
-
-        </div>
-        `
-      }
-
-
-      <div class="grid">
-
-        <div class="card">
-
-          <h2>
-            ➕ Nova reunió
-          </h2>
-
-          <input
-            id="meetingDate"
-            type="date"
-          >
-
-          <br><br>
-
-          <button
-            onclick="createMeeting()">
-
-            Crear i activar
-
-          </button>
-
-        </div>
-
-
-        <div class="card">
-
-          <h2>
-            👥 Nou membre
-          </h2>
-
-          <input
-            id="memberName"
-            placeholder="Nom complet"
-          >
-
-          <br><br>
-
-          <button
-            onclick="addMember()">
-
-            Afegir membre
-
-          </button>
-
-        </div>
-
-      </div>
-
-
-      <div class="card">
-
-        <div class="top">
-
-          <h2>
-            👥 Membres
-          </h2>
-
-          <b>
-            ${members?.length || 0}
-          </b>
-
-        </div>
-
-
-        ${
-          members?.map(member => `
-
-            <div class="row">
-
-              <span>
-
-                ${escapeHTML(member.name)}
-
-                ${
-                  !member.active
-                    ? " — inactiu"
-                    : ""
-                }
-
-              </span>
-
-
-              <button
-                class="secondary"
-                onclick="
-                  toggleMember(
-                    '${member.id}',
-                    ${!member.active}
-                  )
-                ">
-
-                ${
-                  member.active
-                    ? "Desactivar"
-                    : "Activar"
-                }
-
-              </button>
-
-            </div>
-
-          `).join("")
-          ||
-          `
-            <p>
-              Encara no hi ha membres.
-            </p>
-          `
-        }
-
-      </div>
-
-
-      <div class="card">
-
-        <h2>
-          📅 Reunions
-        </h2>
-
-
-        ${
-          meetings?.map(meeting => `
-
-            <div class="row">
-
-              <span>
-
-                ${meeting.date}
-
-                ${
-                  meeting.active
-                    ? " — 🟢 activa"
-                    : ""
-                }
-
-              </span>
-
-
-              <button
-                class="danger"
-                onclick="
-                  deleteMeeting(
-                    '${meeting.id}'
-                  )
-                ">
-
-                Eliminar
-
-              </button>
-
-            </div>
-
-          `).join("")
-          ||
-          `
-            <p>
-              No hi ha reunions.
-            </p>
-          `
-        }
-
-      </div>
-
-
-      <div class="card">
-
-        <button
-          class="secondary"
-          onclick="logout()">
-
-          Tancar sessió
-
-        </button>
-
+    container.innerHTML = `
+      <strong>${formatDate(active.date)}</strong>
+      <div class="small">
+        ${count} persones han fet check-in
       </div>
     `;
 
+    closeButton.classList.remove("hidden");
   }
-
 
   async function createMeeting() {
 
     const date =
-      document.getElementById(
-        "meetingDate"
-      ).value;
-
+      document.getElementById("meetingDateInput").value;
 
     if (!date) {
-
-      alert(
-        "Selecciona una data."
-      );
-
+      alert("Selecciona una data.");
       return;
-
     }
 
+    // Primer tanquem qualsevol reunió activa.
 
-    /*
-     * Només pot existir
-     * una reunió activa.
-     */
-
-    await db
+    const {
+      error: closeError
+    } = await supabaseClient
       .from("meetings")
       .update({
         active: false
       })
-      .eq(
-        "active",
-        true
-      );
+      .eq("active", true);
 
+    if (closeError) {
+      console.error(closeError);
+      alert("No s'ha pogut actualitzar la reunió activa.");
+      return;
+    }
+
+    // Creem la nova.
 
     const {
       error
-    } =
-      await db
-        .from("meetings")
-        .insert({
-
-          date,
-
-          active: true
-
-        });
-
-
-    if (error) {
-
-      alert(error.message);
-
-      return;
-
-    }
-
-
-    showDashboard();
-
-  }
-
-
-  async function closeMeeting(id) {
-
-    await db
+    } = await supabaseClient
       .from("meetings")
-      .update({
-        active: false
-      })
-      .eq(
-        "id",
-        id
-      );
-
-
-    showDashboard();
-
-  }
-
-
-  async function addMember() {
-
-    const name =
-      document
-        .getElementById(
-          "memberName"
-        )
-        .value
-        .trim();
-
-
-    if (!name) {
-
-      alert(
-        "Escriu un nom."
-      );
-
-      return;
-
-    }
-
-
-    const {
-      error
-    } =
-      await db
-        .from("members")
-        .insert({
-
-          name,
-
-          active: true
-
-        });
-
+      .insert({
+        date,
+        active: true
+      });
 
     if (error) {
-
-      alert(error.message);
-
+      console.error(error);
+      alert("No s'ha pogut crear la reunió.");
       return;
-
     }
 
+    document.getElementById(
+      "meetingDateInput"
+    ).value = "";
 
-    showDashboard();
-
+    await loadAdminData();
   }
 
+  async function closeActiveMeeting() {
 
-  async function toggleMember(
-    id,
-    active
-  ) {
-
-    await db
-      .from("members")
-      .update({
-        active
-      })
-      .eq(
-        "id",
-        id
+    const active =
+      meetings.find(
+        meeting => meeting.active === true
       );
 
-
-    showDashboard();
-
-  }
-
-
-  async function deleteMeeting(id) {
+    if (!active) return;
 
     const confirmed =
       confirm(
-        "Vols eliminar aquesta reunió i totes les seves assistències?"
+        "Vols tancar aquesta reunió? Els check-ins es conservaran."
       );
-
 
     if (!confirmed) return;
 
-
-    await db
-      .from("attendance")
-      .delete()
-      .eq(
-        "meeting_id",
-        id
-      );
-
-
-    await db
+    const {
+      error
+    } = await supabaseClient
       .from("meetings")
-      .delete()
-      .eq(
-        "id",
-        id
-      );
+      .update({
+        active: false
+      })
+      .eq("id", active.id);
 
+    if (error) {
+      console.error(error);
+      alert("No s'ha pogut tancar la reunió.");
+      return;
+    }
 
-    showDashboard();
-
+    await loadAdminData();
   }
 
+  function renderMeetings() {
 
-  start();
+    const container =
+      document.getElementById("meetingsList");
+
+    container.innerHTML = "";
+
+    if (meetings.length === 0) {
+      container.innerHTML =
+        `<p class="empty">Encara no hi ha reunions.</p>`;
+      return;
+    }
+
+    meetings.forEach(meeting => {
+
+      const count =
+        attendance.filter(
+          a => a.meeting_id === meeting.id
+        ).length;
+
+      const row =
+        document.createElement("div");
+
+      row.className = "meeting-row";
+
+      row.innerHTML = `
+        <div class="row-top">
+
+          <div>
+            <strong>
+              ${formatDate(meeting.date)}
+            </strong>
+
+            <div class="small">
+              ${count} persones han fet check-in
+            </div>
+
+            ${
+              meeting.active
+                ? `<span class="badge">ACTIVA</span>`
+                : ""
+            }
+          </div>
+
+          <div>
+
+            <button
+              class="secondary"
+              onclick="toggleAttendees('${meeting.id}')"
+            >
+              👥 Veure assistents
+            </button>
+
+            <button
+              class="danger"
+              onclick="deleteMeeting('${meeting.id}')"
+            >
+              🗑️ Esborrar
+            </button>
+
+          </div>
+
+        </div>
+
+        <div
+          id="attendees-${meeting.id}"
+          class="attendee-list hidden"
+        ></div>
+      `;
+
+      container.appendChild(row);
+    });
+  }
+
+  function toggleAttendees(meetingId) {
+
+    const container =
+      document.getElementById(
+        `attendees-${meetingId}`
+      );
+
+    if (!container.classList.contains("hidden")) {
+
+      container.classList.add("hidden");
+
+      return;
+    }
+
+    const meetingAttendance =
+      attendance.filter(
+        a => a.meeting_id === meetingId
+      );
+
+    const attendeeIds =
+      meetingAttendance.map(
+        a => a.member_id
+      );
+
+    const attendees =
+      members
+        .filter(member =>
+          attendeeIds.includes(member.id)
+        )
+        .sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+
+    if (attendees.length === 0) {
+
+      container.innerHTML =
+        `<div class="empty">
+          Ningú ha fet check-in en aquesta reunió.
+        </div>`;
+
+    } else {
+
+      container.innerHTML =
+        `<strong>
+          ${attendees.length} assistents
+        </strong>` +
+        attendees
+          .map(member =>
+            `<div class="attendee">
+              ✓ ${escapeHtml(member.name)}
+            </div>`
+          )
+          .join("");
+    }
+
+    container.classList.remove("hidden");
+  }
+
+  async function deleteMeeting(meetingId) {
+
+    const meeting =
+      meetings.find(
+        m => m.id === meetingId
+      );
+
+    if (!meeting) return;
+
+    if (meeting.active) {
+      alert(
+        "No pots esborrar una reunió activa. Tanca-la primer."
+      );
+      return;
+    }
+
+    const confirmed =
+      confirm(
+        `Vols esborrar la reunió del ${formatDate(meeting.date)}?\n\n` +
+        "També s'eliminaran els seus check-ins."
+      );
+
+    if (!confirmed) return;
+
+    // Primer eliminem les assistències.
+
+    const {
+      error: attendanceError
+    } = await supabaseClient
+      .from("attendance")
+      .delete()
+      .eq("meeting_id", meetingId);
+
+    if (attendanceError) {
+      console.error(attendanceError);
+      alert("No s'han pogut eliminar els check-ins.");
+      return;
+    }
+
+    // Després eliminem la reunió.
+
+    const {
+      error
+    } = await supabaseClient
+      .from("meetings")
+      .delete()
+      .eq("id", meetingId);
+
+    if (error) {
+      console.error(error);
+      alert("No s'ha pogut eliminar la reunió.");
+      return;
+    }
+
+    await loadAdminData();
+  }
+
+  async function addMember() {
+
+    const input =
+      document.getElementById("newMemberName");
+
+    const name =
+      input.value.trim();
+
+    if (!name) {
+      alert("Escriu un nom.");
+      return;
+    }
+
+    const {
+      error
+    } = await supabaseClient
+      .from("members")
+      .insert({
+        name,
+        active: true
+      });
+
+    if (error) {
+      console.error(error);
+      alert("No s'ha pogut afegir el membre.");
+      return;
+    }
+
+    input.value = "";
+
+    await loadAdminData();
+  }
+
+  function renderMembers() {
+
+    const container =
+      document.getElementById("membersList");
+
+    container.innerHTML = "";
+
+    if (members.length === 0) {
+      container.innerHTML =
+        `<p class="empty">No hi ha membres.</p>`;
+      return;
+    }
+
+    members.forEach(member => {
+
+      const row =
+        document.createElement("div");
+
+      row.className = "member-row";
+
+      row.innerHTML = `
+        <div class="row-top">
+
+          <div>
+            <strong>
+              ${escapeHtml(member.name)}
+            </strong>
+
+            <div class="small">
+              Membre actiu
+            </div>
+          </div>
+
+          <button
+            class="danger"
+            onclick="deleteMember('${member.id}')"
+          >
+            🗑️ Borrar
+          </button>
+
+        </div>
+      `;
+
+      container.appendChild(row);
+    });
+  }
+
+  async function deleteMember(memberId) {
+
+    const member =
+      members.find(
+        m => m.id === memberId
+      );
+
+    if (!member) return;
+
+    const confirmed =
+      confirm(
+        `Vols borrar definitivament a ${member.name}?\n\n` +
+        "El membre desapareixerà de la llista i també s'eliminaran els seus registres d'assistència."
+      );
+
+    if (!confirmed) return;
+
+    // Eliminem primer els seus check-ins.
+
+    const {
+      error: attendanceError
+    } = await supabaseClient
+      .from("attendance")
+      .delete()
+      .eq("member_id", memberId);
+
+    if (attendanceError) {
+      console.error(attendanceError);
+      alert(
+        "No s'han pogut eliminar els registres d'assistència."
+      );
+      return;
+    }
+
+    // Després eliminem el membre.
+
+    const {
+      error
+    } = await supabaseClient
+      .from("members")
+      .delete()
+      .eq("id", memberId);
+
+    if (error) {
+      console.error(error);
+      alert("No s'ha pogut borrar el membre.");
+      return;
+    }
+
+    await loadAdminData();
+  }
+
+  function escapeHtml(text) {
+
+    const div =
+      document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+  }
+
+  checkSession();
 
 </script>
 
