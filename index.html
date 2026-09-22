@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    Rotaract · Administració
+  </title>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+  </script>
+
+  <style>
+
+    :root {
+      --green: #0B4D3E;
+      --green-light: #16846A;
+      --bg: #F6F8F7;
+      --white: #FFFFFF;
+      --text: #17211D;
+      --muted: #718078;
+      --border: #E1E8E4;
+      --red: #B42318;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 25px 16px 50px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .logo {
+      color: var(--green);
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      margin: 12px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--green-light);
+    }
+
+    button {
+      padding: 11px 14px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--green);
+      color: white;
+      font-weight: 800;
+    }
+
+    .secondary {
+      background: white;
+      color: var(--green);
+      border: 1px solid var(--border);
+    }
+
+    .danger {
+      background: var(--red);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+    }
+
+    .error {
+      background: #FEF3F2;
+      color: var(--red);
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 12px;
+    }
+
+    .success {
+      background: #E8F7EF;
+      color: #067647;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 12px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media(max-width:650px) {
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .top {
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="top">
+
+    <div>
+
+      <div class="logo">
+        ROTARACT
+      </div>
+
+      <h1>
+        Administració
+      </h1>
+
+    </div>
+
+    <a href="index.html">
+      Web pública
+    </a>
+
+  </div>
+
+
+  <div id="app"></div>
+
+</div>
+
+
+<script>
+
+  /*
+   * ==========================================================
+   * SUPABASE
+   * ==========================================================
+   */
+
+  const SUPABASE_URL =
+    "https://ocyzergjotoobbtezxuw.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_1BT5wV69t3hyzJNuOWvkwA_bu2U42uq";
+
+
+  const db =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+
+  const app =
+    document.getElementById("app");
+
+
+  function escapeHTML(value) {
+
+    return String(value)
+      .replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]);
+
+  }
+
+
+  async function start() {
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await db.auth.getSession();
+
+
+    if (!session) {
+
+      showLogin();
+
+    } else {
+
+      showDashboard();
+
+    }
+
+  }
+
+
+  function showLogin() {
+
+    app.innerHTML = `
+
+      <div class="card">
+
+        <h2>
+          🔐 Accés administrador
+        </h2>
+
+        <p>
+          Inicia sessió per gestionar
+          les reunions.
+        </p>
+
+        <input
+          id="email"
+          type="email"
+          placeholder="Email"
+        >
+
+        <br><br>
+
+        <input
+          id="password"
+          type="password"
+          placeholder="Contrasenya"
+        >
+
+        <br><br>
+
+        <button
+          onclick="login()">
+
+          Entrar
+
+        </button>
+
+        <div id="loginError"></div>
+
+      </div>
+    `;
+
+  }
+
+
+  async function login() {
+
+    const email =
+      document.getElementById("email").value;
+
+    const password =
+      document.getElementById("password").value;
+
+
+    const {
+      error
+    } =
+      await db.auth.signInWithPassword({
+
+        email,
+
+        password
+
+      });
+
+
+    if (error) {
+
+      document.getElementById(
+        "loginError"
+      ).innerHTML = `
+
+        <div class="error">
+          ${escapeHTML(error.message)}
+        </div>
+
+      `;
+
+      return;
+
+    }
+
+
+    showDashboard();
+
+  }
+
+
+  async function logout() {
+
+    await db.auth.signOut();
+
+    showLogin();
+
+  }
+
+
+  async function showDashboard() {
+
+    const {
+      data: members
+    } =
+      await db
+        .from("members")
+        .select("*")
+        .order("name");
+
+
+    const {
+      data: meetings
+    } =
+      await db
+        .from("meetings")
+        .select("*")
+        .order("date", {
+          ascending: false
+        });
+
+
+    const active =
+      meetings?.find(
+        meeting => meeting.active
+      );
+
+
+    app.innerHTML = `
+
+      ${
+        active
+        ?
+        `
+        <div class="card">
+
+          <h2>
+            🟢 Reunió activa
+          </h2>
+
+          <p>
+            <b>
+              ${active.date}
+            </b>
+          </p>
+
+          <button
+            class="danger"
+            onclick="closeMeeting('${active.id}')">
+
+            Tancar reunió
+
+          </button>
+
+        </div>
+        `
+        :
+        `
+        <div class="card">
+
+          <h2>
+            🔴 No hi ha reunió activa
+          </h2>
+
+          <p>
+            Crea una reunió per començar
+            a acceptar assistències.
+          </p>
+
+        </div>
+        `
+      }
+
+
+      <div class="grid">
+
+        <div class="card">
+
+          <h2>
+            ➕ Nova reunió
+          </h2>
+
+          <input
+            id="meetingDate"
+            type="date"
+          >
+
+          <br><br>
+
+          <button
+            onclick="createMeeting()">
+
+            Crear i activar
+
+          </button>
+
+        </div>
+
+
+        <div class="card">
+
+          <h2>
+            👥 Nou membre
+          </h2>
+
+          <input
+            id="memberName"
+            placeholder="Nom complet"
+          >
+
+          <br><br>
+
+          <button
+            onclick="addMember()">
+
+            Afegir membre
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="top">
+
+          <h2>
+            👥 Membres
+          </h2>
+
+          <b>
+            ${members?.length || 0}
+          </b>
+
+        </div>
+
+
+        ${
+          members?.map(member => `
+
+            <div class="row">
+
+              <span>
+
+                ${escapeHTML(member.name)}
+
+                ${
+                  !member.active
+                    ? " — inactiu"
+                    : ""
+                }
+
+              </span>
+
+
+              <button
+                class="secondary"
+                onclick="
+                  toggleMember(
+                    '${member.id}',
+                    ${!member.active}
+                  )
+                ">
+
+                ${
+                  member.active
+                    ? "Desactivar"
+                    : "Activar"
+                }
+
+              </button>
+
+            </div>
+
+          `).join("")
+          ||
+          `
+            <p>
+              Encara no hi ha membres.
+            </p>
+          `
+        }
+
+      </div>
+
+
+      <div class="card">
+
+        <h2>
+          📅 Reunions
+        </h2>
+
+
+        ${
+          meetings?.map(meeting => `
+
+            <div class="row">
+
+              <span>
+
+                ${meeting.date}
+
+                ${
+                  meeting.active
+                    ? " — 🟢 activa"
+                    : ""
+                }
+
+              </span>
+
+
+              <button
+                class="danger"
+                onclick="
+                  deleteMeeting(
+                    '${meeting.id}'
+                  )
+                ">
+
+                Eliminar
+
+              </button>
+
+            </div>
+
+          `).join("")
+          ||
+          `
+            <p>
+              No hi ha reunions.
+            </p>
+          `
+        }
+
+      </div>
+
+
+      <div class="card">
+
+        <button
+          class="secondary"
+          onclick="logout()">
+
+          Tancar sessió
+
+        </button>
+
+      </div>
+    `;
+
+  }
+
+
+  async function createMeeting() {
+
+    const date =
+      document.getElementById(
+        "meetingDate"
+      ).value;
+
+
+    if (!date) {
+
+      alert(
+        "Selecciona una data."
+      );
+
+      return;
+
+    }
+
+
+    /*
+     * Només pot existir
+     * una reunió activa.
+     */
+
+    await db
+      .from("meetings")
+      .update({
+        active: false
+      })
+      .eq(
+        "active",
+        true
+      );
+
+
+    const {
+      error
+    } =
+      await db
+        .from("meetings")
+        .insert({
+
+          date,
+
+          active: true
+
+        });
+
+
+    if (error) {
+
+      alert(error.message);
+
+      return;
+
+    }
+
+
+    showDashboard();
+
+  }
+
+
+  async function closeMeeting(id) {
+
+    await db
+      .from("meetings")
+      .update({
+        active: false
+      })
+      .eq(
+        "id",
+        id
+      );
+
+
+    showDashboard();
+
+  }
+
+
+  async function addMember() {
+
+    const name =
+      document
+        .getElementById(
+          "memberName"
+        )
+        .value
+        .trim();
+
+
+    if (!name) {
+
+      alert(
+        "Escriu un nom."
+      );
+
+      return;
+
+    }
+
+
+    const {
+      error
+    } =
+      await db
+        .from("members")
+        .insert({
+
+          name,
+
+          active: true
+
+        });
+
+
+    if (error) {
+
+      alert(error.message);
+
+      return;
+
+    }
+
+
+    showDashboard();
+
+  }
+
+
+  async function toggleMember(
+    id,
+    active
+  ) {
+
+    await db
+      .from("members")
+      .update({
+        active
+      })
+      .eq(
+        "id",
+        id
+      );
+
+
+    showDashboard();
+
+  }
+
+
+  async function deleteMeeting(id) {
+
+    const confirmed =
+      confirm(
+        "Vols eliminar aquesta reunió i totes les seves assistències?"
+      );
+
+
+    if (!confirmed) return;
+
+
+    await db
+      .from("attendance")
+      .delete()
+      .eq(
+        "meeting_id",
+        id
+      );
+
+
+    await db
+      .from("meetings")
+      .delete()
+      .eq(
+        "id",
+        id
+      );
+
+
+    showDashboard();
+
+  }
+
+
+  start();
+
+</script>
+
+</body>
+</html>
