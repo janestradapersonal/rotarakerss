@@ -127,6 +127,25 @@ using (
 );
 
 
+drop policy if exists
+"public_insert_members"
+on public.members;
+
+
+create policy
+"public_insert_members"
+
+on public.members
+
+for insert
+
+to anon
+
+with check (
+  active = true
+);
+
+
 -- ADMIN
 
 drop policy if exists

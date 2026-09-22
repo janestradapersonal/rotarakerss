@@ -11,7 +11,7 @@
   >
 
   <title>
-    Rotaract · Administració
+    Rotaract · Check-in
   </title>
 
   <script
@@ -183,13 +183,13 @@
       </div>
 
       <h1>
-        Administració
+        Check-in de reunió
       </h1>
 
     </div>
 
-    <a href="index.html">
-      Web pública
+    <a href="admin.html">
+      Administració
     </a>
 
   </div>
@@ -242,23 +242,244 @@
 
   async function start() {
 
+    showPublicCheckIn();
+
+  }
+
+
+  async function showPublicCheckIn(message = "") {
+
     const {
-      data: {
-        session
-      }
+      data: meetings,
+      error: meetingsError
     } =
-      await db.auth.getSession();
+      await db
+        .from("meetings")
+        .select("*")
+        .eq("active", true)
+        .order("date", { ascending: false });
 
+    const activeMeeting = meetings?.[0];
 
-    if (!session) {
+    const {
+      data: members,
+      error: membersError
+    } =
+      await db
+        .from("members")
+        .select("id, name")
+        .eq("active", true)
+        .order("name");
 
-      showLogin();
+    if (meetingsError || membersError) {
 
-    } else {
+      app.innerHTML = `
+        <div class="card">
+          <h2>No s'ha pogut carregar la reunió</h2>
+          <div class="error">
+            ${escapeHTML((meetingsError || membersError).message)}
+          </div>
+        </div>
+      `;
 
-      showDashboard();
+      return;
 
     }
+
+    app.innerHTML = `
+      <div class="card">
+        <h2>🟢 ${activeMeeting ? "Reunió activa" : "No hi ha reunió activa"}</h2>
+        <p>
+          ${activeMeeting
+            ? `Reunió del <b>${escapeHTML(activeMeeting.date)}</b>. Busca el teu nom per registrar l'assistència.`
+            : "Quan l'administrador obri una reunió, podràs fer el check-in aquí."
+          }
+        </p>
+      </div>
+
+      ${activeMeeting ? `
+        <div class="card">
+          <h2>👋 Fes el teu check-in</h2>
+          <input
+            id="memberSearch"
+            type="search"
+            placeholder="Busca el teu nom"
+            oninput="filterMembers()"
+            autocomplete="off"
+          >
+          <div id="memberList">
+            ${members?.map(member => `
+              <div class="row member-row" data-name="${escapeHTML(member.name.toLowerCase())}">
+                <span>${escapeHTML(member.name)}</span>
+                <button onclick="checkIn('${member.id}')">Fer check-in</button>
+              </div>
+            `).join("") || "<p>Encara no hi ha membres.</p>"}
+          </div>
+          <div id="checkInMessage">${message}</div>
+        </div>
+
+        <div class="card">
+          <h2>➕ No trobes el teu nom?</h2>
+          <p>Afegeix-te i registra el check-in en un sol pas.</p>
+          <input id="newMemberName" placeholder="Nom complet" autocomplete="name">
+          <br><br>
+          <button onclick="addPublicMember()">Afegir i fer check-in</button>
+        </div>
+      ` : ""}
+    `;
+
+  }
+
+
+  function filterMembers() {
+
+    const search =
+      document
+        .getElementById("memberSearch")
+        .value
+        .trim()
+        .toLowerCase();
+
+    document
+      .querySelectorAll(".member-row")
+      .forEach(row => {
+        row.classList.toggle(
+          "hidden",
+          !row.dataset.name.includes(search)
+        );
+      });
+
+  }
+
+
+  async function checkIn(memberId) {
+
+    const {
+      data: meetings
+    } =
+      await db
+        .from("meetings")
+        .select("id")
+        .eq("active", true)
+        .limit(1);
+
+    const activeMeeting = meetings?.[0];
+
+    if (!activeMeeting) {
+
+      showPublicCheckIn(`
+        <div class="error">Ara mateix no hi ha cap reunió activa.</div>
+      `);
+
+      return;
+
+    }
+
+    const {
+      error
+    } =
+      await db
+        .from("attendance")
+        .insert({
+          member_id: memberId,
+          meeting_id: activeMeeting.id
+        });
+
+    if (error && !error.message.toLowerCase().includes("duplicate")) {
+
+      showPublicCheckIn(`
+        <div class="error">${escapeHTML(error.message)}</div>
+      `);
+
+      return;
+
+    }
+
+    const streak = await getStreak(memberId);
+
+    showPublicCheckIn(`
+      <div class="success">
+        ✅ Assistència registrada! La teva ratxa és de <b>${streak} reunió${streak === 1 ? "" : "ns"}</b>.
+      </div>
+    `);
+
+  }
+
+
+  async function addPublicMember() {
+
+    const name =
+      document
+        .getElementById("newMemberName")
+        .value
+        .trim();
+
+    if (!name) {
+
+      alert("Escriu el teu nom.");
+
+      return;
+
+    }
+
+    const {
+      data: member,
+      error
+    } =
+      await db
+        .from("members")
+        .insert({ name, active: true })
+        .select("id")
+        .single();
+
+    if (error) {
+
+      showPublicCheckIn(`
+        <div class="error">${escapeHTML(error.message)}</div>
+      `);
+
+      return;
+
+    }
+
+    await checkIn(member.id);
+
+  }
+
+
+  async function getStreak(memberId) {
+
+    const {
+      data: meetings
+    } =
+      await db
+        .from("meetings")
+        .select("id, date")
+        .order("date", { ascending: false });
+
+    const {
+      data: attendances
+    } =
+      await db
+        .from("attendance")
+        .select("meeting_id")
+        .eq("member_id", memberId);
+
+    const attendedMeetings = new Set(
+      attendances?.map(attendance => attendance.meeting_id)
+    );
+
+    let streak = 0;
+
+    for (const meeting of meetings || []) {
+
+      if (!attendedMeetings.has(meeting.id)) break;
+
+      streak += 1;
+
+    }
+
+    return streak;
 
   }
 
